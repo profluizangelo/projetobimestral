@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<! – programa de jogo de damas on line, em HTML, CSS e JAVASCRIPT --> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Damas</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 0;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .white {
+            background-color: #f0d9b5;
+        }
+        .black {
+            background-color: #b58863;
+        }
+        .piece {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .red {
+            background-color: red;
+        }
+        .blue {
+            background-color: blue;
+        }
+        .selected {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <script>
+        const board = document.getElementById('board');
+        const cells = [];
+        const pieces = [];
+
+        let selectedPiece = null;
+
+        function createBoard() {
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.classList.add((i + j) % 2 === 0 ? 'white' : 'black');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', onCellClick);
+                    board.appendChild(cell);
+                    cells.push(cell);
+                }
+            }
+        }
+
+        function addPieces() {
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if ((i + j) % 2 !== 0) {
+                        if (i < 3 || i > 4) {
+                            const piece = document.createElement('div');
+                            piece.classList.add('piece');
+                            piece.classList.add(i < 3 ? 'red' : 'blue');
+                            piece.dataset.row = i;
+                            piece.dataset.col = j;
+                            piece.addEventListener('click', onPieceClick);
+                            getCell(i, j).appendChild(piece);
+                            pieces.push(piece);
+                        }
+                    }
+                }
+            }
+        }
+
+        function getCell(row, col) {
+            return cells.find(cell => cell.dataset.row == row && cell.dataset.col == col);
+        }
+
+        function onPieceClick(event) {
+            event.stopPropagation();
+            if (selectedPiece) {
+                selectedPiece.classList.remove('selected');
+            }
+            selectedPiece = event.currentTarget;
+            selectedPiece.classList.add('selected');
+        }
+
+        function onCellClick(event) {
+            const cell = event.currentTarget;
+            if (selectedPiece) {
+                const oldRow = parseInt(selectedPiece.dataset.row);
+                const oldCol = parseInt(selectedPiece.dataset.col);
+                const newRow = parseInt(cell.dataset.row);
+                const newCol = parseInt(cell.dataset.col);
+
+                const rowDiff = Math.abs(newRow - oldRow);
+                const colDiff = Math.abs(newCol - oldCol);
+
+                if (rowDiff === 1 && colDiff === 1) {
+                    movePiece(selectedPiece, newRow, newCol);
+                } else if (rowDiff === 2 && colDiff === 2) {
+                    const midRow = (newRow + oldRow) / 2;
+                    const midCol = (newCol + oldCol) / 2;
+                    const midCell = getCell(midRow, midCol);
+
+                    if (midCell.firstChild && midCell.firstChild.classList.contains(selectedPiece.classList.contains('red') ? 'blue' : 'red')) {
+                        midCell.firstChild.remove();
+                        movePiece(selectedPiece, newRow, newCol);
+                    }
+                }
+            }
+        }
+
+        function movePiece(piece, newRow, newCol) {
+            const oldCell = getCell(piece.dataset.row, piece.dataset.col);
+            const newCell = getCell(newRow, newCol);
+
+            newCell.appendChild(piece);
+            piece.dataset.row = newRow;
+            piece.dataset.col = newCol;
+
+            selectedPiece.classList.remove('selected');
+            selectedPiece = null;
+        }
+
+        createBoard();
+        addPieces();
+    </script>
+</body>
+</html>
